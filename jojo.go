@@ -36,18 +36,20 @@ func init() {
 
 func scriptHandler(script string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[Info] %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path)
-		log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
-		fmt.Fprintf(w, "Hey, I'm going to call: %s", script)
-		cmd := exec.Command(script, "")
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &out
-		err := cmd.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Fprintf(w, "Results: %s", out.String())
+                log.Printf("[Info] %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path)
+                log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
+                fmt.Fprintf(w, "Hey, I'm going to call: %s", script)
+                log.Printf("[Info] Running %s", script)
+                cmd := exec.Command(script, "")
+                var out bytes.Buffer
+                cmd.Stdout = &out
+                cmd.Stderr = &out
+                err := cmd.Run()
+                if err != nil {
+                        log.Fatal(err)
+                }
+                fmt.Fprintf(w, "Results: %s", out.String())
+                log.Printf("[Info] Results: %s", out.String())
 	}
 }
 

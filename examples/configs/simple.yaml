@@ -1,0 +1,5 @@
+routes:
+  - url: /test
+    script: /tmp/test.sh
+  - url: /test2
+    script: /tmp/test2.sh

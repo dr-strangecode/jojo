@@ -42,11 +42,21 @@ func init() {
 	flag.StringVar(&keyFile, "key", defaultKeyFile, usage)
 }
 
+var host string
+func init() {
+	const (
+		defaultHost       = "localhost"
+    usage             = "host or ip to serve on: '--host=localhost'"
+	)
+	flag.StringVar(&host, "host", defaultHost, usage)
+	flag.StringVar(&host, "h", defaultHost, usage+" (shorthand)")
+}
+
 var port uint64
 func init() {
 	const (
 		defaultPort = 3000
-    usage       = "port to serve on: '--port=8080'"
+    usage       = "port to serve on: '--port=3000'"
 	)
 	flag.Uint64Var(&port, "port", defaultPort, usage)
 	flag.Uint64Var(&port, "p", defaultPort, usage+" (shorthand)")
@@ -90,10 +100,10 @@ func loadConfig() {
 func main() {
 	flag.Parse()
 	loadConfig()
-	log.Println("[INFO] Starting server on port "+strconv.FormatUint(port, 10))
+  log.Printf("[INFO] Starting server on %s:%s",host,strconv.FormatUint(port, 10))
   if keyFile != "" && certFile != "" {
-    log.Fatalf("[FATAL] %s", http.ListenAndServeTLS(":"+strconv.FormatUint(port, 10), certFile, keyFile, nil))
+    log.Fatalf("[FATAL] %s", http.ListenAndServeTLS(host+":"+strconv.FormatUint(port, 10), certFile, keyFile, nil))
   } else {
-    log.Fatalf("[FATAL] %s", http.ListenAndServe(":"+strconv.FormatUint(port, 10), nil))
+    log.Fatalf("[FATAL] %s", http.ListenAndServe(host+":"+strconv.FormatUint(port, 10), nil))
   }
 }

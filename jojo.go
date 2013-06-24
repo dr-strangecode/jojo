@@ -27,7 +27,7 @@ func init() {
 var certFile string
 func init() {
 	const (
-		defaultCertFile   = "/etc/pki/tls/certs/jojo.crt"
+		defaultCertFile   = ""
     usage             = "full path to SSL certificate file: '--cert=/path/to/your.crt'"
 	)
 	flag.StringVar(&certFile, "cert", defaultCertFile, usage)
@@ -36,19 +36,10 @@ func init() {
 var keyFile string
 func init() {
 	const (
-		defaultKeyFile    = "/etc/pki/tls/private/jojo.key"
+		defaultKeyFile    = ""
     usage             = "full path to SSL key file: '--key=/path/to/your.key'"
 	)
 	flag.StringVar(&keyFile, "key", defaultKeyFile, usage)
-}
-
-var useSSL bool
-func init() {
-  const (
-    defaultUseSSL = false
-    usage         = "set to true to enable SSL support: '--ssl=true' *NOTE* must provide key and crt"
-  )
-  flag.BoolVar(&useSSL, "ssl", defaultUseSSL, usage)
 }
 
 var port uint64
@@ -100,7 +91,7 @@ func main() {
 	flag.Parse()
 	loadConfig()
 	log.Println("[INFO] Starting server on port "+strconv.FormatUint(port, 10))
-  if useSSL == true {
+  if keyFile != "" && certFile != "" {
     log.Fatalf("[FATAL] %s", http.ListenAndServeTLS(":"+strconv.FormatUint(port, 10), certFile, keyFile, nil))
   } else {
     log.Fatalf("[FATAL] %s", http.ListenAndServe(":"+strconv.FormatUint(port, 10), nil))

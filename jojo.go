@@ -62,8 +62,6 @@ func init() {
 	flag.Uint64Var(&port, "p", defaultPort, usage+" (shorthand)")
 }
 
-
-
 func scriptHandler(script string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
     log.Printf("[Info] %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path)

@@ -2,6 +2,20 @@
 
 JoJo makes is easy to transform your scripts into an api.
 
+## Note
+
+This is a rather dirty proof of concept and one of my first go projects...it could be better.
+
+## Options
+
+    --config 'config file'
+    --host 'host'
+    --port 'port'
+    --cert '/path/to/cert'
+    --key '/path/to/key'
+    --user 'http basic user'
+    --password 'http basic password'
+
 ## Get started
 
 1. compile jojo (I'll eventually make a little repository, but it will probably be a while)

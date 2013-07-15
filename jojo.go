@@ -66,9 +66,9 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 		// Misc Logging junk
 		log.Printf("[Info] %s %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path, r.URL.RawQuery)
 		log.Printf("Args: %s", r.URL.Query())
-		log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
-		fmt.Fprintf(w, "<p>Hey, I'm going to call: %s %s</p>", script, urlCmdArgs)
+		//log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
 		log.Printf("[Info] Running %s %s", script, urlCmdArgs)
+		fmt.Fprintf(w, "{\"script\": \"%s\",\"arguments\": \"%s\",", script, urlCmdArgs)
 
 		// Run the script passing in the arguments
 		cmd := exec.Command(script, urlCmdArgs...)
@@ -77,10 +77,10 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 		cmd.Stderr = &out
 		cmdErr := cmd.Run()
 		if cmdErr != nil {
-			fmt.Fprintf(w, "<p>Got an error: %s</p>", cmdErr)
+			fmt.Fprintf(w, "\"error\": \"%s\",", cmdErr)
 			log.Printf("[ERROR] %s", cmdErr)
 		}
-		fmt.Fprintf(w, "<p>Results: %s</p>", out.String())
+		fmt.Fprintf(w, "\"results\": \"%s\"}", strings.Split(out.String(), "\n"))
 		log.Printf("[Info] Results: %s", out.String())
 	}
 }
@@ -105,8 +105,6 @@ func loadConfig(useSSL bool) {
 		url, _ := config.Get(fmt.Sprintf("routes[%d].url", i))
 		script, _ := config.Get(fmt.Sprintf("routes[%d].script", i))
 		method, _ := config.Get(fmt.Sprintf("routes[%d].method", i))
-		parameters, _ := config.Get(fmt.Sprintf("routes[%d].parameters", i))
-		log.Printf("Params: %s", parameters)
 		if method == "" {
 			method = "GET"
 		}

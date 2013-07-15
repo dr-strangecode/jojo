@@ -75,22 +75,24 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 
 		fmt.Fprintf(w, "{\"script\": %s, ", strconv.Quote(script))
 		fmt.Fprintf(w, "\"arguments\": [")
-		for i, paramPair := range jsonUrlCmdArgs {
-			entries := strings.Split(jsonParamRe.ReplaceAllString(paramPair, " "), " ")
-			if i + 1 < len(jsonUrlCmdArgs) {
-				for j, entry := range entries {
-					if j == 0 {
-						fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
-					} else {
-						fmt.Fprintf(w, "%s}, ", strconv.Quote(entry))
+		if len(jsonUrlCmdArgs) > 1 {
+			for i, paramPair := range jsonUrlCmdArgs {
+				entries := strings.Split(jsonParamRe.ReplaceAllString(paramPair, " "), " ")
+				if i + 1 < len(jsonUrlCmdArgs) {
+					for j, entry := range entries {
+						if j == 0 {
+							fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
+						} else {
+							fmt.Fprintf(w, "%s}, ", strconv.Quote(entry))
+						}
 					}
-				}
-			} else {
-				for j, entry := range entries {
-					if j == 0 {
-						fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
-					} else {
-						fmt.Fprintf(w, "%s}", strconv.Quote(entry))
+				} else {
+					for j, entry := range entries {
+						if j == 0 {
+							fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
+						} else {
+							fmt.Fprintf(w, "%s}", strconv.Quote(entry))
+						}
 					}
 				}
 			}

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -56,13 +57,21 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 				return
 			}
 		}
+
+		// Replace "=" and "&" with a " "
+		// Creates []string urlCmdArgs
+		re := regexp.MustCompile("=|&")
+		urlCmdArgs := strings.Split(re.ReplaceAllString(r.URL.RawQuery, " "), " ")
+
+		// Misc Logging junk
 		log.Printf("[Info] %s %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path, r.URL.RawQuery)
 		log.Printf("Args: %s", r.URL.Query())
-		urlCmdArgs := strings.Join(strings.Split(strings.Join(strings.Split(r.URL.RawQuery, "&"), " "), "="), " ")
 		log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
 		fmt.Fprintf(w, "<p>Hey, I'm going to call: %s %s</p>", script, urlCmdArgs)
 		log.Printf("[Info] Running %s %s", script, urlCmdArgs)
-		cmd := exec.Command(script, urlCmdArgs)
+
+		// Run the script passing in the arguments
+		cmd := exec.Command(script, urlCmdArgs...)
 		var out bytes.Buffer
 		cmd.Stdout = &out
 		cmd.Stderr = &out

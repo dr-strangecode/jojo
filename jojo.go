@@ -60,15 +60,42 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 
 		// Replace "=" and "&" with a " "
 		// Creates []string urlCmdArgs
-		re := regexp.MustCompile("=|&")
-		urlCmdArgs := strings.Split(re.ReplaceAllString(r.URL.RawQuery, " "), " ")
+		exitRe := regexp.MustCompile("^exit status ")
+		paramsRe := regexp.MustCompile("=|&")
+		jsonRe := regexp.MustCompile("&")
+		jsonParamRe := regexp.MustCompile("=")
+		urlCmdArgs := strings.Split(paramsRe.ReplaceAllString(r.URL.RawQuery, " "), " ")
+		jsonUrlCmdArgs := strings.Split(jsonRe.ReplaceAllString(r.URL.RawQuery, " "), " ")
 
 		// Misc Logging junk
 		log.Printf("[Info] %s %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path, r.URL.RawQuery)
 		log.Printf("Args: %s", r.URL.Query())
 		//log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
 		log.Printf("[Info] Running %s %s", script, urlCmdArgs)
-		fmt.Fprintf(w, "{\"script\": \"%s\",\"arguments\": \"%s\",", script, urlCmdArgs)
+
+		fmt.Fprintf(w, "{\"script\": %s, ", strconv.Quote(script))
+		fmt.Fprintf(w, "\"arguments\": [")
+		for i, paramPair := range jsonUrlCmdArgs {
+			entries := strings.Split(jsonParamRe.ReplaceAllString(paramPair, " "), " ")
+			if i + 1 < len(jsonUrlCmdArgs) {
+				for j, entry := range entries {
+					if j == 0 {
+						fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
+					} else {
+						fmt.Fprintf(w, "%s}, ", strconv.Quote(entry))
+					}
+				}
+			} else {
+				for j, entry := range entries {
+					if j == 0 {
+						fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
+					} else {
+						fmt.Fprintf(w, "%s}", strconv.Quote(entry))
+					}
+				}
+			}
+		}
+		fmt.Fprintf(w, "], ")
 
 		// Run the script passing in the arguments
 		cmd := exec.Command(script, urlCmdArgs...)
@@ -77,13 +104,37 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 		cmd.Stderr = &stderr
 		cmdErr := cmd.Run()
 		if cmdErr != nil {
-			fmt.Fprintf(w, "\"error\": \"%s\",", cmdErr)
+			fmt.Fprintf(w, "\"error\": \"%s\", ", cmdErr)
 			log.Printf("[ERROR] %s", cmdErr)
 		}
-		fmt.Fprintf(w, "\"stdout\": \"%s\",", strings.Split(stdout.String(), "\n"))
-		fmt.Fprintf(w, "\"stderr\": \"%s\",", strings.Split(stderr.String(), "\n"))
-		fmt.Fprintf(w, "\"exit-status\": \"%s\"", cmd.ProcessState)
+
+		exitStatus, _ := strconv.ParseInt(exitRe.ReplaceAllString(cmd.ProcessState.String(), ""), 10, 16)
+		fmt.Fprintf(w, "\"exit-status\": %d, ", exitStatus)
+
+		stdOutString := strings.Split(strings.TrimSpace(stdout.String()), "\n")
+		fmt.Fprintf(w, "\"stdout\": [")
+		for i, line := range stdOutString {
+			if i + 1 < len(stdOutString) {
+				fmt.Fprintf(w, "%s, ", strconv.Quote(line))
+			} else {
+				fmt.Fprintf(w, "%s", strconv.Quote(line))
+			}
+		}
+		fmt.Fprintf(w, "], ")
+
+		stdErrString := strings.Split(strings.TrimSpace(stderr.String()), "\n")
+		fmt.Fprintf(w, "\"stderr\": [")
+		for i, line := range stdErrString {
+			if i + 1 < len(stdErrString) {
+				fmt.Fprintf(w, "%s, ", strconv.Quote(line))
+			} else {
+				fmt.Fprintf(w, "%s", strconv.Quote(line))
+			}
+		}
+		fmt.Fprintf(w, "]")
 		fmt.Fprintf(w, "}")
+
+		// Moar logging
 		log.Printf("[Info] Stdout: %s", stdout.String())
 		log.Printf("[Info] Stderr: %s", stderr.String())
 		log.Printf("[Info] State: %s", cmd.ProcessState)

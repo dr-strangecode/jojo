@@ -72,16 +72,21 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 
 		// Run the script passing in the arguments
 		cmd := exec.Command(script, urlCmdArgs...)
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &out
+		var stderr, stdout bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
 		cmdErr := cmd.Run()
 		if cmdErr != nil {
 			fmt.Fprintf(w, "\"error\": \"%s\",", cmdErr)
 			log.Printf("[ERROR] %s", cmdErr)
 		}
-		fmt.Fprintf(w, "\"results\": \"%s\"}", strings.Split(out.String(), "\n"))
-		log.Printf("[Info] Results: %s", out.String())
+		fmt.Fprintf(w, "\"stdout\": \"%s\",", strings.Split(stdout.String(), "\n"))
+		fmt.Fprintf(w, "\"stderr\": \"%s\",", strings.Split(stderr.String(), "\n"))
+		fmt.Fprintf(w, "\"exit-status\": \"%s\"", cmd.ProcessState)
+		fmt.Fprintf(w, "}")
+		log.Printf("[Info] Stdout: %s", stdout.String())
+		log.Printf("[Info] Stderr: %s", stderr.String())
+		log.Printf("[Info] State: %s", cmd.ProcessState)
 	}
 }
 

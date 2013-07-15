@@ -73,26 +73,29 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 		//log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
 		log.Printf("[Info] Running %s %s", script, urlCmdArgs)
 
+		// JSON - start json and script name
 		fmt.Fprintf(w, "{\"script\": %s, ", strconv.Quote(script))
+
+		// JSON - Script arguments - spit out either an empty list of an array of k/v pairs
 		fmt.Fprintf(w, "\"arguments\": [")
-		if len(jsonUrlCmdArgs) > 1 {
-			for i, paramPair := range jsonUrlCmdArgs {
-				entries := strings.Split(jsonParamRe.ReplaceAllString(paramPair, " "), " ")
-				if i + 1 < len(jsonUrlCmdArgs) {
-					for j, entry := range entries {
-						if j == 0 {
-							fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
-						} else {
-							fmt.Fprintf(w, "%s}, ", strconv.Quote(entry))
-						}
+		for i, paramPair := range jsonUrlCmdArgs {
+			entries := strings.Split(jsonParamRe.ReplaceAllString(paramPair, " "), " ")
+			if i + 1 < len(jsonUrlCmdArgs) {
+				for j, entry := range entries {
+					if len(entry) == 0 {
+					} else if j == 0 {
+						fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
+					} else {
+						fmt.Fprintf(w, "%s}, ", strconv.Quote(entry))
 					}
-				} else {
-					for j, entry := range entries {
-						if j == 0 {
-							fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
-						} else {
-							fmt.Fprintf(w, "%s}", strconv.Quote(entry))
-						}
+				}
+			} else {
+				for j, entry := range entries {
+					if len(entry) == 0 {
+					} else if j == 0 {
+						fmt.Fprintf(w, "{%s: ", strconv.Quote(entry))
+					} else {
+						fmt.Fprintf(w, "%s}", strconv.Quote(entry))
 					}
 				}
 			}
@@ -110,25 +113,30 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 			log.Printf("[ERROR] %s", cmdErr)
 		}
 
+		// JSON - exit status
 		exitStatus, _ := strconv.ParseInt(exitRe.ReplaceAllString(cmd.ProcessState.String(), ""), 10, 16)
 		fmt.Fprintf(w, "\"exit-status\": %d, ", exitStatus)
 
+		// JSON - stdout - array of lines
 		stdOutString := strings.Split(strings.TrimSpace(stdout.String()), "\n")
 		fmt.Fprintf(w, "\"stdout\": [")
 		for i, line := range stdOutString {
 			if i + 1 < len(stdOutString) {
 				fmt.Fprintf(w, "%s, ", strconv.Quote(line))
+			} else if len(line) == 0 {
 			} else {
 				fmt.Fprintf(w, "%s", strconv.Quote(line))
 			}
 		}
 		fmt.Fprintf(w, "], ")
 
+		// JSON - stderr - array of lines
 		stdErrString := strings.Split(strings.TrimSpace(stderr.String()), "\n")
 		fmt.Fprintf(w, "\"stderr\": [")
 		for i, line := range stdErrString {
 			if i + 1 < len(stdErrString) {
 				fmt.Fprintf(w, "%s, ", strconv.Quote(line))
+			} else if len(line) == 0 {
 			} else {
 				fmt.Fprintf(w, "%s", strconv.Quote(line))
 			}

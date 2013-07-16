@@ -28,9 +28,89 @@ I wanted something stupid easy to install that could be 100% repeated with code 
 With this, I can create machines that have a single responsibility.  I can also quit logging in from one 
 machine into another.
 
-## ToDo
+## Sample Usage and Responses
 
-Add parameters
+*NOTE:* These are from running the examples
+
+##### test.sh
+
+    curl -X POST "https://localhost:3000/test" | python -m json.tool
+    {
+        "arguments": [], 
+        "duration": "4.574145702s", 
+        "exit-status": 0, 
+        "script": "/tmp/test.sh", 
+        "stderr": [], 
+        "stdout": [
+            "libmongodb.x86_64                       2.2.3-4.fc17                 @updates   ", 
+            "mongodb.x86_64                          2.2.3-4.fc17                 @updates   ", 
+            "mongodb-server.x86_64                   2.2.3-4.fc17                 @updates   ", 
+            "libmongo-client.i686                    0.1.6.1-1.fc17               updates    ", 
+            "libmongo-client.x86_64                  0.1.6.1-1.fc17               updates    ", 
+            "libmongo-client-devel.i686              0.1.6.1-1.fc17               updates    ", 
+            "libmongo-client-devel.x86_64            0.1.6.1-1.fc17               updates    ", 
+            "libmongo-client-doc.noarch              0.1.6.1-1.fc17               updates    ", 
+            "mongo-10gen.x86_64                      2.4.5-mongodb_1              10gen      ", 
+            "mongo-10gen-server.x86_64               2.4.5-mongodb_1              10gen      ", 
+            "mongo-10gen-unstable.x86_64             2.5.0-mongodb_1              10gen      ", 
+            "mongo-10gen-unstable-server.x86_64      2.5.0-mongodb_1              10gen      ", 
+            "mongo-java-driver.noarch                2.7.3-1.fc17                 updates    ", 
+            "mongo-java-driver-bson.noarch           2.7.3-1.fc17                 updates    ", 
+            "mongo-java-driver-bson-javadoc.noarch   2.7.3-1.fc17                 updates    ", 
+            "mongo-java-driver-javadoc.noarch        2.7.3-1.fc17                 updates    ", 
+            "mongo18-10gen.x86_64                    1.8.5-mongodb_1              10gen      ", 
+            "mongo18-10gen-server.x86_64             1.8.5-mongodb_1              10gen      ", 
+            "mongo20-10gen.x86_64                    2.0.8-mongodb_1              10gen      ", 
+            "mongo20-10gen-server.x86_64             2.0.8-mongodb_1              10gen      ", 
+            "mongodb-devel.i686                      2.2.3-4.fc17                 updates    ", 
+            "mongodb-devel.x86_64                    2.2.3-4.fc17                 updates    ", 
+            "mongoose.x86_64                         3.1-1.fc17                   updates    ", 
+            "mongoose-devel.i686                     3.1-1.fc17                   updates    ", 
+            "mongoose-devel.x86_64                   3.1-1.fc17                   updates    ", 
+            "mongoose-lib.i686                       3.1-1.fc17                   updates    ", 
+            "mongoose-lib.x86_64                     3.1-1.fc17                   updates    ", 
+            "pdns-backend-mongodb.x86_64             3.1-4.fc17                   updates    ", 
+            "php-Monolog-mongo.noarch                1.2.1-1.fc17                 updates    ", 
+            "php-pecl-mongo.x86_64                   1.2.12-1.fc17                updates    ", 
+            "pymongo.x86_64                          2.1.1-1.fc17                 fedora     ", 
+            "pymongo-gridfs.x86_64                   2.1.1-1.fc17                 fedora     ", 
+            "python-asyncmongo.noarch                0.1.3-2.fc17                 fedora     ", 
+            "python-mongoengine.noarch               0.7.9-4.fc17                 updates    ", 
+            "rubygem-openshift-origin-auth-mongo.noarch", 
+            "rubygem-openshift-origin-auth-mongo-doc.noarch"
+        ]
+    }
+    
+
+##### test2.sh
+
+    curl -X POST "https://localhost:3000/test2?--foo=bar&--number=2" | python -m json.tool
+    {
+        "arguments": [
+            {
+                "--foo": "bar"
+            }, 
+            {
+                "--number": "2"
+            }
+        ], 
+        "duration": "2.580674ms", 
+        "exit-status": 0, 
+        "script": "/tmp/test2.sh", 
+        "stderr": [], 
+        "stdout": [
+            "test", 
+            "arg: --foo", 
+            "arg: bar", 
+            "arg: --number", 
+            "arg: 2", 
+            "----------------\"\"-----", 
+            "4", 
+            "--foo bar --number 2"
+        ]
+    }
+
+
 
 ## Warning
 

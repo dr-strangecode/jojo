@@ -4,3 +4,4 @@ routes:
     method: post
   - url: /test2
     script: /tmp/test2.sh
+    method: post

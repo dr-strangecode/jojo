@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func checkAuth(w http.ResponseWriter, r *http.Request) bool {
@@ -69,7 +70,7 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 
 		// Misc Logging junk
 		log.Printf("[Info] %s %s %s %s %s", r.Proto, r.Method, r.Host, r.URL.Path, r.URL.RawQuery)
-		log.Printf("Args: %s", r.URL.Query())
+		//log.Printf("Args: %s", r.URL.Query())
 		//log.Printf("[DEBUG] <Header>%s</Header>", r.Header)
 		log.Printf("[Info] Running %s %s", script, urlCmdArgs)
 
@@ -107,7 +108,13 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 		var stderr, stdout bytes.Buffer
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
+
+		// Timer and running command
+		t0 := time.Now()
 		cmdErr := cmd.Run()
+		t1 := time.Now()
+		fmt.Fprintf(w, "\"duration\": \"%v\", ", t1.Sub(t0))
+
 		if cmdErr != nil {
 			fmt.Fprintf(w, "\"error\": \"%s\", ", cmdErr)
 			log.Printf("[ERROR] %s", cmdErr)
@@ -145,9 +152,10 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 		fmt.Fprintf(w, "}")
 
 		// Moar logging
+		log.Printf("[Info] State: %s", cmd.ProcessState)
+		log.Printf("[Info] Duration: %v", t1.Sub(t0))
 		log.Printf("[Info] Stdout: %s", stdout.String())
 		log.Printf("[Info] Stderr: %s", stderr.String())
-		log.Printf("[Info] State: %s", cmd.ProcessState)
 	}
 }
 

@@ -2,9 +2,14 @@
 
 JoJo makes is easy to transform your scripts into an api.
 
+I wanted something stupid easy to install that could be 100% repeated with code from configuration management. 
+With this, I can create machines that have a single responsibility.  I can also quit logging in from one 
+machine into another.
+
 ## Note
 
-This is a rather dirty proof of concept and one of my first go projects...it could be better.
+This is a rather dirty proof of concept and one of my first go projects...it could be better.  If you'd like to
+contribute or make the go code better, I would be happy to accept pull requests.
 
 ## Options
 
@@ -21,12 +26,6 @@ This is a rather dirty proof of concept and one of my first go projects...it cou
 1. compile jojo (I'll eventually make a little repository, but it will probably be a while)
 2. create a config file - this is where you tell jojo about your scripts and what url to serve them from
 3. create an init file - jojo just logs to stderr and stdout - capture those in your logs however you like
-
-## Thoughts
-
-I wanted something stupid easy to install that could be 100% repeated with code from configuration management. 
-With this, I can create machines that have a single responsibility.  I can also quit logging in from one 
-machine into another.
 
 ## Sample Usage and Responses
 

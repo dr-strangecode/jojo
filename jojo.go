@@ -48,7 +48,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
-func scriptHandlerGenerator(script string) http.HandlerFunc {
+func scriptHandlerGenerator(script string, stringTimeout string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if user != "" && password != "" {
 			authorized := checkAuth(w, r)
@@ -111,14 +111,38 @@ func scriptHandlerGenerator(script string) http.HandlerFunc {
 
 		// Timer and running command
 		t0 := time.Now()
-		cmdErr := cmd.Run()
+
+		timeout, err := time.ParseDuration(stringTimeout)
+		if err != nil {
+			cmdErr := cmd.Run()
+			if cmdErr != nil {
+				fmt.Fprintf(w, "\"error\": \"%s\", ", cmdErr)
+				log.Printf("[ERROR] %s", cmdErr)
+			}
+		} else {
+			cmd.Start()
+			done := make(chan error)
+			go func() {
+				done <- cmd.Wait()
+			}()
+			select {
+			case <-time.After(timeout):
+				if err := cmd.Process.Kill(); err != nil {
+					fmt.Fprintf(w, "\"error\": \"failed to kill process: %s\", ", err)
+					log.Printf("[ERROR] %s", err)
+				}
+				//<-done // allow goroutine to exit
+				fmt.Fprintf(w, "\"error\": \"process timed out and was killed\", ")
+				log.Printf("[INFO] process killed after timeout")
+			case err := <-done:
+				if err != nil {
+					log.Printf("[INFO] process finished with error = %v", err)
+				}
+			}
+		}
 		t1 := time.Now()
 		fmt.Fprintf(w, "\"duration\": \"%v\", ", t1.Sub(t0))
 
-		if cmdErr != nil {
-			fmt.Fprintf(w, "\"error\": \"%s\", ", cmdErr)
-			log.Printf("[ERROR] %s", cmdErr)
-		}
 
 		// JSON - exit status
 		exitStatus, _ := strconv.ParseInt(exitRe.ReplaceAllString(cmd.ProcessState.String(), ""), 10, 16)
@@ -179,10 +203,11 @@ func loadConfig(useSSL bool) {
 		url, _ := config.Get(fmt.Sprintf("routes[%d].url", i))
 		script, _ := config.Get(fmt.Sprintf("routes[%d].script", i))
 		method, _ := config.Get(fmt.Sprintf("routes[%d].method", i))
+		stringTimeout, _ := config.Get(fmt.Sprintf("routes[%d].timeout", i))
 		if method == "" {
 			method = "GET"
 		}
-		r.HandleFunc(url, scriptHandlerGenerator(script)).Methods(method)
+		r.HandleFunc(url, scriptHandlerGenerator(script, stringTimeout)).Methods(method)
 	}
 
 	http.Handle("/", r)

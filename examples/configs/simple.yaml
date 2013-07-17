@@ -2,6 +2,8 @@ routes:
   - url: /test
     script: /tmp/test.sh
     method: post
+    timeout: 30s
   - url: /test2
     script: /tmp/test2.sh
     method: post
+    timeout: 1m
